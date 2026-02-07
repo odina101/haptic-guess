@@ -2,158 +2,171 @@
 
 **AI-powered audio analysis for haptic feedback synchronization.**
 
-Generate precise haptic/vibration timelines from any audio file. Perfect for creating "Perfect Slices" style haptic feedback in games and apps.
+Generate vibration timelines from any audio file. Perfect for creating "Perfect Slices" style haptic feedback in games and apps.
 
-## Features
+## ✨ Features
 
-- 🎯 **Millisecond precision** - Detects exact impact moments in audio
-- 🔊 **Sound classification** - Uses YAMNet (521 audio classes) for intelligent detection
-- 📱 **Multi-platform export** - iOS (Core Haptics), Android, Unity, JSON
-- ⚡ **Fast processing** - Analyze audio files in seconds
-- 🎮 **Game-ready output** - Intensity, sharpness, and duration for each haptic event
+- 📊 **Second-by-second analysis** - Get vibration data for every second (including silence)
+- 🎯 **Millisecond precision** - Detect exact impact moments for smooth haptics
+- 📱 **Multi-platform export** - iOS, Android, JSON formats
+- 🔪 **Slice detection** - Automatically identifies impact/slice moments
+- ⚡ **Fast** - Analyze any audio in seconds
 
-## Installation
+## 🚀 Quick Start
 
 ```bash
-# Clone the repo
+# Clone
 git clone https://github.com/odina101/haptic-guess.git
 cd haptic-guess
 
-# Create virtual environment
-python3 -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install dependencies
+# Install
 pip install -r requirements.txt
+
+# Analyze your audio
+python haptic_sync.py your_audio.mp3
 ```
 
-## Quick Start
+## 📊 Usage
 
-### 1. Precision Haptic Detection (Perfect Slices style)
+### Full Analysis (second-by-second)
 
 ```bash
-# Analyze audio and see visual timeline
-python haptic_sync.py your_audio.mp3
+python haptic_sync.py audio.mp3
+```
 
-# Higher sensitivity for more events
-python haptic_sync.py audio.mp3 --sensitivity 0.8 --min-gap 30
+Output:
+```
+SEC │ VIBRATE │ INTENSITY │ VISUAL                    │ ACTION
+─────────────────────────────────────────────────────────────────
+ 0s │   NO    │   0%      │ ░░░░░░░░░░░░░░░░░░░░ │ 🔇 SILENCE
+ 1s │   NO    │   0%      │ ░░░░░░░░░░░░░░░░░░░░ │ 🔇 SILENCE
+ 2s │   low   │   6%      │ ▒░░░░░░░░░░░░░░░░░░░ │ 〰️ quiet
+ 3s │ STRONG  │  69%      │ █████████████ │ 🔪 SLICE!
+ 4s │   YES   │  21%      │ ▓▓▓▓░░░░░░░░░░░░░░░░ │ 🔪 SLICE!
+```
 
-# Export for iOS
+### Precise Mode (millisecond accuracy)
+
+```bash
+python haptic_sync.py audio.mp3 --mode precise --sensitivity 0.9
+```
+
+### Export Formats
+
+```bash
+# JSON (for any platform)
+python haptic_sync.py audio.mp3 --format json
+
+# iOS Swift
 python haptic_sync.py audio.mp3 --format swift
 
-# Export for Android
+# Android
 python haptic_sync.py audio.mp3 --format android
 
-# Export JSON for any platform
+# Save to file
 python haptic_sync.py audio.mp3 --format json -o haptics.json
 ```
 
-### 2. AI Sound Classification with Timeline
+## 📱 Integration Examples
 
-```bash
-# Get timestamped sound classifications
-python timeline_classify.py audio.wav --threshold 0.15
+### iOS (Swift)
 
-# Filter for specific sounds
-python timeline_classify.py audio.wav --sounds chop slice break impact
-
-# Export as JSON
-python timeline_classify.py audio.wav --json -o sounds.json
-```
-
-## Output Formats
-
-### Visual Timeline
-```
-📊 Detected 13 haptic trigger points
-
-⏱️  Visual Timeline:
-0s |        ▓ █   ▓      ▓ ░     ▓     ▓   ▓     ░  ▓       ▓   | 24.1s
-   Legend: █ strong  ▓ medium  ░ light
-```
-
-### iOS (Swift + Core Haptics)
 ```swift
-let hapticEvents: [(time: Double, intensity: Float, sharpness: Float)] = [
-    (3.46, 0.504, 0.745),   // Sharp slice
-    (4.133, 0.69, 0.297),   // Heavy impact
+// Generated output
+let hapticTimeline: [(second: Int, intensity: Float, vibrate: Bool)] = [
+    (0, 0.00, false),
+    (1, 0.00, false),
+    (2, 0.06, false),
+    (3, 0.69, true),  // SLICE!
+    (4, 0.21, true),
+    // ...
 ]
+
+// Play haptics synced with video
+func checkHaptic(at currentSecond: Int) {
+    if let data = hapticTimeline.first(where: { $0.second == currentSecond }),
+       data.vibrate {
+        let intensity = data.intensity
+        // Trigger haptic with intensity
+    }
+}
 ```
 
-### Android
+### Android (Kotlin)
+
 ```kotlin
-val timings = longArrayOf(0, 3459, 35, 638, 40, ...)
-val amplitudes = intArrayOf(0, 0, 128, 0, 175, ...)
+// Generated output
+val timings = longArrayOf(3000, 200, 800, 200, ...)
+val amplitudes = intArrayOf(0, 176, 0, 53, ...)
+
+// Play with video
 vibrator.vibrate(VibrationEffect.createWaveform(timings, amplitudes, -1))
 ```
 
-### JSON
+### JavaScript/React Native
+
+```javascript
+const haptics = require('./haptics.json');
+
+// Sync with video playback
+video.on('timeupdate', (currentTime) => {
+    const second = Math.floor(currentTime);
+    const data = haptics.timeline.find(t => t.second === second);
+    
+    if (data?.vibrate) {
+        Haptics.impact({ style: data.strength });
+    }
+});
+```
+
+## 📋 Output Format
+
+### JSON Structure
+
 ```json
 {
-  "events": [
+  "file": "audio.mp3",
+  "duration_sec": 24.06,
+  "vibration_seconds": 9,
+  "timeline": [
     {
-      "time_ms": 3459.8,
-      "time_sec": 3.46,
-      "intensity": 0.504,
-      "brightness": 0.745,
-      "type": "sharp",
-      "pattern": "quick_pulse",
-      "duration_ms": 35
+      "second": 0,
+      "intensity": 0,
+      "vibrate": false,
+      "strength": "none",
+      "action": "silence"
+    },
+    {
+      "second": 3,
+      "intensity": 69,
+      "vibrate": true,
+      "strength": "strong",
+      "action": "slice"
     }
   ]
 }
 ```
 
-## API Usage
+### Intensity Levels
 
-```python
-from haptic_sync import detect_haptic_events, generate_haptic_timeline
+| Intensity | Strength | Vibrate | Action |
+|-----------|----------|---------|--------|
+| 0-4% | none | ❌ No | 🔇 Silence |
+| 5-19% | light | 〰️ Optional | Quiet sound |
+| 20-49% | medium | ✅ Yes | 🔊 Sound / 🔪 Slice |
+| 50-100% | strong | ✅ **Yes** | 💥 Impact / 🔪 Slice |
 
-# Analyze audio
-result = detect_haptic_events('audio.mp3', sensitivity=0.7)
+## 🛠 Requirements
 
-# Get events
-for event in result['events']:
-    print(f"{event['time_ms']}ms: {event['type']} (intensity: {event['intensity']})")
-
-# Export
-swift_code = generate_haptic_timeline(result, format='swift')
+```
+numpy>=1.19.0
+librosa>=0.10.0
+soundfile>=0.12.0
 ```
 
-## How It Works
+## 📄 License
 
-1. **Onset Detection** - Uses librosa to find exact moments when sounds begin
-2. **Spectral Analysis** - Analyzes frequency content to determine sound "sharpness"
-3. **Intensity Mapping** - Combines loudness and onset strength for haptic intensity
-4. **Pattern Classification** - Categorizes sounds as sharp/medium/heavy for different haptic patterns
-
-## Files
-
-| File | Description |
-|------|-------------|
-| `haptic_sync.py` | Main haptic detection tool (millisecond precision) |
-| `timeline_classify.py` | AI sound classification with timestamps |
-| `yamnet.tflite` | Pre-trained YAMNet model (521 sound classes) |
-| `yamnet_class_map.csv` | Sound class labels |
-
-## Requirements
-
-- Python 3.8+
-- librosa
-- numpy
-- soundfile
-- tensorflow (for AI classification)
-
-## Use Cases
-
-- 🎮 **Games** - Sync haptics with game audio (slicing, impacts, explosions)
-- 🎬 **Video apps** - Add haptic feedback to videos
-- 🎵 **Music apps** - Beat-synced haptics
-- 📱 **Any app** - Convert any audio to haptic timeline
-
-## License
-
-MIT License - feel free to use in your projects!
+MIT - Use freely in your projects!
 
 ---
 
